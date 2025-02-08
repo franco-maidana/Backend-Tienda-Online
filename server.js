@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import Conexion from './src/config/db.js';
+import indexRouter from './src/router/index.router.js';
 
 
 // configuracion dotenv para la carga de las variables de entorno
@@ -15,3 +16,9 @@ const ready = () => {
 }
 
 server.listen(PORT, ready)
+
+server.use(express.json());
+server.use(express.urlencoded({extended: true}));
+
+
+server.use('/', indexRouter)
