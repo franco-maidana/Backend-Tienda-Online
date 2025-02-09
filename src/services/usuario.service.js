@@ -1,15 +1,59 @@
 import bcrypt from 'bcrypt'
-import {crearUsuario, obtenerUsuarios} from '../data/models/usuario.model.js'
+import {crearUsuario, obtenerUsuarios, obtenemosListaUsuario, actualizarUsuario} from '../data/models/usuario.model.js'
 
 
 // registramos un nuevo usuario
 export const crear = async (nombre, apellido, telefono, direccion, email, password) => {
-  const usuarioExistente = await obtenerUsuarios(email);
-  if(usuarioExistente) throw new Error('El email ya esta registrado')
+  try {
+    const usuarioExistente = await obtenerUsuarios(email);
+    if (usuarioExistente) throw new Error('El email ya está registrado, por favor intente con otro email');
 
-  // encriptamos password
-  const passwordEncriptado = bcrypt.hashSync(password, 10);
+    // Encriptar contraseña
+    const passwordEncriptado = bcrypt.hashSync(password, 10);
 
-  const usuarioId = await crearUsuario(nombre, apellido, telefono, direccion, email, passwordEncriptado);
-  return {id: usuarioId, nombre, apellido, telefono, direccion, email,}
+    // Crear usuario en la base de datos
+    const usuarioId = await crearUsuario(nombre, apellido, telefono, direccion, email, passwordEncriptado);
+    return { id: usuarioId, nombre, apellido, telefono, direccion, email };
+
+  } catch (error) {
+    // Capturar error de duplicado en MySQL
+    if (error.code === 'ER_DUP_ENTRY') {
+      throw new Error('El email ya está registrado, intenta con otro.');
+    }
+    throw error; // Si es otro error, lo lanzamos igual
+  }
+};
+
+
+// obtenemos lista de usuario
+export const listar = async (pagina = 1, limite = 5) => {
+  const offset = (pagina - 1) * limite;
+  const {usuarios, total } = await obtenemosListaUsuario(limite, offset);
+
+  // removemos la contraseña andes de devolver la lista de usuario sin modificar la base de datos
+  const usuarioSinContraseña = usuarios.map(({password, ...usuarios}) => usuarios)
+
+  return {
+    Usuarios: usuarioSinContraseña,
+    paginaActual: pagina,
+    totalPagina: Math.ceil(total / limite),
+    totalUsuario: total,
+  };
 }
+
+// actualizamos usuario
+export const modificarUsuario = async (id, datos) => {
+
+  if (!datos) {
+      throw new Error("❌ Error: Los datos no fueron pasados correctamente.");
+  }
+
+  const usuarioExistente = await obtenemosListaUsuario(id);
+  if (!usuarioExistente) throw new Error("El usuario no existe");
+
+  const actualizado = await actualizarUsuario(id, datos);
+  if (!actualizado) throw new Error("No se pudo actualizar el usuario");
+
+  return { message: "Usuario actualizado correctamente" };
+};
+
