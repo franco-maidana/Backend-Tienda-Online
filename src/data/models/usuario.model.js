@@ -13,9 +13,20 @@ export const crearUsuario = async (nombre, apellido, telefono, direccion, email,
 
 // Buscamos un usuario por el email
 export const obtenerUsuarios = async (email) => {
-  const [usuarios] = await Conexion.query('SELECT * FROM usuario WHERE email = ?', [email])
-  return usuarios.length ? usuarios[0] : null
+  console.log("📌 Buscando usuario con email:", email); // 🔥 Depuración
+
+  if (!email || typeof email !== 'string') {
+      throw new Error("❌ Error: Email inválido en la consulta SQL");
+  }
+
+  const [usuarios] = await Conexion.query(
+      `SELECT * FROM usuario WHERE email = ?`,
+      [email]
+  );
+
+  return usuarios.length ? usuarios[0] : null;
 };
+
 
 // Buscamos la lista de los usuarios
 export const obtenemosListaUsuario = async (limite = 10, offset = 0) => {
@@ -72,3 +83,51 @@ export const actualizarUsuario = async (id, datos) => {
   return result.affectedRows > 0;
 };
 
+// guardar el token recuperado
+export const guardarTokenReset = async (id, token) => {
+  const [result] = await Conexion.query(
+      `UPDATE usuario SET reset_token = ?, reset_expira = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE id = ?`,
+      [token, id]
+  );
+
+  return result.affectedRows > 0;
+};
+
+
+// Obtener usuario por token
+export const obtenerUsuarioPorToken = async (token) => {
+  console.log("📌 Buscando usuario con token:", token); // 🔥 Depuración
+
+  const [usuarios] = await Conexion.query(
+      `SELECT * FROM usuario WHERE reset_token = ? AND reset_expira > NOW()`,
+      [token]
+  );
+
+  console.log("📌 Resultado de la consulta:", usuarios); // 🔥 Depuración
+
+  return usuarios.length ? usuarios[0] : null;
+};
+
+
+
+// Eliminar el token después de usarlo
+export const eliminarTokenReset = async (id) => {
+  await Conexion.query(
+      `UPDATE usuario SET reset_token = NULL, reset_expira = NULL WHERE id = ?`,
+      [id]
+  );
+};
+
+// actualizamos password
+export const actualizarPassword = async (id, passwordEncriptado) => {
+  console.log("📌 Intentando actualizar contraseña para el usuario ID:", id); // 🔥 Depuración
+
+  const [result] = await Conexion.query(
+      `UPDATE usuario SET password = ?, reset_token = NULL, reset_expira = NULL, updated_at = NOW() WHERE id = ?`,
+      [passwordEncriptado, id]
+  );
+
+  console.log("📌 Resultado de la actualización:", result); // 🔥 Depuración
+
+  return result.affectedRows > 0;
+};
