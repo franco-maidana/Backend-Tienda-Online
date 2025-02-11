@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import {crearUsuario, obtenerUsuarios, obtenemosListaUsuario, actualizarUsuario} from '../data/models/usuario.model.js'
+import {crearUsuario, obtenerUsuarios, obtenemosListaUsuario, actualizarUsuario, borrarUsuario, obtenerUsuariosPorID} from '../data/models/usuario.model.js'
 
 
 // registramos un nuevo usuario
@@ -57,3 +57,20 @@ export const modificarUsuario = async (id, datos) => {
   return { message: "Usuario actualizado correctamente" };
 };
 
+// 🚀 Lógica para eliminar usuario
+export const eliminar = async (id) => {
+
+  // 1️⃣ Verificar si el usuario existe
+  const usuario = await obtenerUsuariosPorID(id);
+  if (!usuario) {
+      throw new Error("Usuario no encontrado");
+  }
+
+  // 2️⃣ Eliminar el usuario de la base de datos
+  const eliminado = await borrarUsuario(id);
+  if (!eliminado) {
+      throw new Error("No se pudo eliminar el usuario");
+  }
+
+  return { message: "Usuario eliminado exitosamente" };
+};

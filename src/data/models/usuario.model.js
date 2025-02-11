@@ -131,3 +131,22 @@ export const actualizarPassword = async (id, passwordEncriptado) => {
 
   return result.affectedRows > 0;
 };
+
+// eliminamos un usuario por su id 
+export const obtenerUsuariosPorID = async (id) => {
+  const [usuario] = await Conexion.query(
+    'SELECT * FROM usuario WHERE id = ?',
+    [id]
+  );
+  return usuario.length ? usuario[0] : null
+}
+
+
+// borramos el usuario
+export const borrarUsuario = async (id) => {
+  const [resultado] = await Conexion.query(
+    'DELETE FROM usuario WHERE id = ?',
+    [id]
+  );
+  return resultado.affectedRows > 0 
+}

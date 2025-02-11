@@ -1,4 +1,4 @@
-import {crear, listar, modificarUsuario} from '../services/usuario.service.js'
+import {crear, listar, modificarUsuario, eliminar} from '../services/usuario.service.js'
 
 export const registro = async (req, res) => {
   try {
@@ -47,6 +47,19 @@ export const actualizarDatosUsuario = async (req, res) => {
 
   } catch (error) {
       console.error("❌ Error en actualización:", error.message); // 🔥 Depuración
+      res.status(400).json({ message: error.message });
+  }
+};
+
+export const eliminarUsuario = async (req, res) => {
+  try {
+
+      const { id } = req.params; // llega bien
+      const resultado = await eliminar(id);
+      
+      res.json(resultado);
+  } catch (error) {
+      console.error("❌ Error al eliminar usuario:", error.message);
       res.status(400).json({ message: error.message });
   }
 };
