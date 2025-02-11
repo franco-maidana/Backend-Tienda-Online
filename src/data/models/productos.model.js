@@ -74,3 +74,11 @@ export const borrarProducto = async (id) => {
   );
   return resultado.affectedRows > 0 
 }
+
+// 🔥 Disminuir stock después de la compra
+export const disminuirStock = async (producto_id, cantidad) => {
+  await Conexion.query(
+      `UPDATE productos SET stock = stock - ? WHERE id = ?`,
+      [cantidad, producto_id]
+  );
+};
