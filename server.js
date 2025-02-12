@@ -1,33 +1,43 @@
-import dotenv from 'dotenv';
-import express from 'express';
-import Conexion from './src/config/db.js';
-import cors from 'cors'
-import indexRouter from './src/router/index.router.js';
+import dotenv from "dotenv";
+import express from "express";
+import Conexion from "./src/config/db.js";
+import cors from "cors";
+import indexRouter from "./src/router/index.router.js";
 
-
-// configuracion dotenv para la carga de las variables de entorno
 dotenv.config();
 
 const server = express();
-const PORT = process.env.PORT || 8080
+const PORT = process.env.PORT || 8080;
 
+// 🔥 Conectar a la base de datos
 const ready = () => {
-  console.log('servidor andando en el puerto ' + PORT)
-  Conexion
-}
+  console.log("🚀 Servidor corriendo en el puerto " + PORT);
+  Conexion;
+};
 
-server.listen(PORT, ready)
+// 📌 Configurar CORS (Permitir el frontend)
+server.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true, // Permitir cookies si usas autenticación
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-// 🔥 Configurar CORS
-server.use(cors({
-  origin: "http://localhost:5173", // Permitir el frontend
-  credentials: true, // Permitir cookies si usas autenticación
-  methods: ["GET", "POST", "PUT", "DELETE"], // Métodos permitidos
-  allowedHeaders: ["Content-Type", "Authorization"] // Headers permitidos
-}));
+// 📌 Middleware para procesar JSON (⚠️ No aplicar a webhooks)
+server.use((req, res, next) => {
+  if (req.originalUrl === "/api/pago/webhook") {
+    next(); // ❌ Evita que el body se transforme en JSON
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
-server.use(express.json());
-server.use(express.urlencoded({extended: true}));
+server.use(express.urlencoded({ extended: true }));
 
+// 📌 Cargar las rutas
+server.use("/", indexRouter);
 
-server.use('/', indexRouter)
+// 📌 Iniciar el servidor
+server.listen(PORT, ready);
