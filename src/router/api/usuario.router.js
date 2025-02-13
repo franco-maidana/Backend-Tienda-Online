@@ -1,16 +1,16 @@
-import { Router } from "express";
+import CustomRouter from "../customRouter.js";
 import { registro, Listar, actualizarDatosUsuario, eliminarUsuario } from "../../controllers/usuarios.controllers.js";
-import { forgotPassword, resetPassword } from "../../controllers/auth.controllers.js"; // 🔥 Agregar resetPassword
+import { forgotPassword, resetPassword } from "../../controllers/auth.controllers.js";
 import { validatorRegistro } from "../../validations/usuarioValidations.js";
 import manejodeErrores from "../../middlewares/validation.mid.js";
 
-const usuarioRouter = Router();
+const usuarioRouter = new CustomRouter();
 
-usuarioRouter.post("/crear", validatorRegistro, manejodeErrores, registro);
-usuarioRouter.get("/listado", Listar);
-usuarioRouter.put("/upDate/:id", actualizarDatosUsuario);
-usuarioRouter.post("/forgot-password", forgotPassword);
-usuarioRouter.post("/reset-password", resetPassword); // 🔥 Agregar esta ruta
-usuarioRouter.delete('/destroy/:id', eliminarUsuario);
+usuarioRouter.create("/crear", ['public'], ...validatorRegistro, manejodeErrores, registro);
+usuarioRouter.listar("/listado", ['admin'], Listar);
+usuarioRouter.modificar("/upDate/:id", ['admin', 'cliente'], actualizarDatosUsuario);
+usuarioRouter.create("/forgot-password", ['public'], forgotPassword);
+usuarioRouter.create("/reset-password", ['public'], resetPassword);
+usuarioRouter.eliminar('/destroy/:id', ['admin'], eliminarUsuario);
 
-export default usuarioRouter;
+export default usuarioRouter.getRouter();

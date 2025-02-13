@@ -3,6 +3,8 @@ import express from "express";
 import Conexion from "./src/config/db.js";
 import cors from "cors";
 import indexRouter from "./src/router/index.router.js";
+import passport from './src/utils/passport.js'
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
@@ -25,14 +27,8 @@ server.use(
   })
 );
 
-// 📌 Middleware para procesar JSON (⚠️ No aplicar a webhooks)
-server.use((req, res, next) => {
-  if (req.originalUrl === "/api/pago/webhook") {
-    next(); // ❌ Evita que el body se transforme en JSON
-  } else {
-    express.json()(req, res, next);
-  }
-});
+server.use(passport.initialize())
+server.use(cookieParser());
 
 server.use(express.urlencoded({ extended: true }));
 

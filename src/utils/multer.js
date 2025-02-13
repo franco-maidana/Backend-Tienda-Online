@@ -1,7 +1,7 @@
 import multer from "multer";
 import path from 'path'
 
-// 🔥 Configuración de almacenamiento para guardar imágenes en la carpeta "uploads"
+//  Configuración de almacenamiento para guardar imágenes en la carpeta "uploads"
 const storage = multer.diskStorage({
   destination: (req, file, cb ) => {
     cb(null, 'upload/');
@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
   }
 })
 
-// 🔥 Filtros para aceptar solo imágenes
+//  Filtros para aceptar solo imágenes
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
   if (allowedTypes.includes(file.mimetype)) {
@@ -23,7 +23,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 
-// 📌 Middleware de `multer`
+//  Middleware de `multer`
 const upload = multer({ storage, fileFilter });
 
 export default upload;
