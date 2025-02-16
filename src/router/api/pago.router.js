@@ -1,11 +1,9 @@
-import express from "express";
+import CustomRouter from "../customRouter.js";
 import { procesarPago } from "../../controllers/pago.controllers.js";
 
-const pagoRouter = express.Router();
+const pagoRouter = new CustomRouter();
 
-// 🔥 Ruta para iniciar el pago con Stripe
-pagoRouter.post("/checkout", procesarPago);
+//  Ruta para iniciar el pago con Stripe (requiere autenticación)
+pagoRouter.create("/checkout", ['cliente'], procesarPago);
 
-
-
-export default pagoRouter;
+export default pagoRouter.getRouter();

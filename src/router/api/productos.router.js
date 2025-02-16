@@ -1,12 +1,13 @@
-import { Router } from "express";
+import CustomRouter from "../customRouter.js";
 import { crearNuevoProducto, ListadoProducto, actualizarProducto, eliminarProducto } from "../../controllers/productos.controlers.js";
 import upload from "../../utils/multer.js";
 
-const productoRouter = Router()
 
-productoRouter.post('/crear', upload.single('imagen') ,crearNuevoProducto);
-productoRouter.get('/listado', ListadoProducto);
-productoRouter.put('/upDate/:id', actualizarProducto);
-productoRouter.delete('/destroy/:id', eliminarProducto)
+const productoRouter = new CustomRouter()
 
-export default productoRouter
+productoRouter.create('/crear', ['admin'] , upload.single('imagen') , crearNuevoProducto);
+productoRouter.listar('/listado', ['cliente', 'admin'] , ListadoProducto);
+productoRouter.modificar('/upDate/:id', ['admin'] , actualizarProducto);
+productoRouter.eliminar('/destroy/:id', ['admin'] , eliminarProducto)
+
+export default productoRouter.getRouter()
