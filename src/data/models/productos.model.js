@@ -14,6 +14,10 @@ export const crearProducto = async ({ nombre, descripcion, marca, categoria, pre
 // Buscamos la lista de los usuarios
 export const obtenemosListaProducto = async (limite, offset, categoria) => {
   try {
+    // 📌 Convertir valores a enteros puros antes de la consulta
+    const limiteInt = Number.isNaN(parseInt(limite, 10)) ? 10 : parseInt(limite, 10);
+    const offsetInt = Number.isNaN(parseInt(offset, 10)) ? 0 : parseInt(offset, 10);
+
     let query = "SELECT * FROM productos";
     let queryParams = [];
 
@@ -22,17 +26,24 @@ export const obtenemosListaProducto = async (limite, offset, categoria) => {
       queryParams.push(categoria);
     }
 
-    // 📌 IMPORTANTE: Concatenamos `LIMIT` y `OFFSET` directamente en la consulta
-    query += ` LIMIT ${parseInt(limite, 10)} OFFSET ${parseInt(offset, 10)}`;
+    query += ` LIMIT ${limiteInt} OFFSET ${offsetInt}`; // ⚠️ Concatenamos los valores directamente
 
-    console.log("📌 Consulta SQL corregida:", query);
+    console.log("📌 SQL Ejecutado:", query);
     console.log("📌 Parámetros:", queryParams);
 
-    // 📌 Ejecutamos la consulta
+    // 📌 Ejecutamos la consulta sin pasar `LIMIT` y `OFFSET` como parámetros
     const [productos] = await Conexion.execute(query, queryParams);
 
-    const totalQuery = "SELECT COUNT(*) AS total FROM productos";
-    const [totalResult] = await Conexion.execute(totalQuery);
+    // 📌 Contamos el total de productos sin paginación
+    let totalQuery = "SELECT COUNT(*) AS total FROM productos";
+    let totalParams = [];
+
+    if (categoria) {
+      totalQuery += " WHERE categoria = ?";
+      totalParams.push(categoria);
+    }
+
+    const [totalResult] = await Conexion.execute(totalQuery, totalParams);
     const total = totalResult[0].total;
 
     return { productos, total };
@@ -41,9 +52,6 @@ export const obtenemosListaProducto = async (limite, offset, categoria) => {
     throw new Error("Error al obtener productos");
   }
 };
-
-
-
 
 // modificar productos
 export const actualizarProducto = async (id, datos) => {

@@ -15,24 +15,20 @@ export const crearNuevoProducto = async (req, res) => {
   }
 };
 
-export const ListadoProducto = async (req, res, next) => {
+export const ListadoProducto = async (req, res) => {
   try {
-    const pagina = parseInt(req.query.page, 10) || 1;
-    const limite = parseInt(req.query.limit, 10) || 10;
-    const categoria = req.query.categoria || null; 
+    const pagina = parseInt(req.query.pagina) || 1;
+    const limite = parseInt(req.query.limite) || 10;
+    const categoria = req.query.categoria || null;
 
-    console.log("📌 Categoría recibida:", categoria);
-    console.log("📌 Página:", pagina, "Límite:", limite);
+    console.log(`📌 Solicitando productos - Página: ${pagina}, Límite: ${limite}, Categoría: ${categoria}`);
 
-    const productos = await listar(pagina, limite, categoria);
-
-    return res.status(200).json({
-      message: "Listado de productos",
-      productos,
-    });
+    const productosData = await listar(pagina, limite, categoria);
+    
+    res.json(productosData);
   } catch (error) {
-    console.error("❌ Error en ListadoProducto:", error.message);
-    return next(error);
+    console.error("❌ Error al listar productos:", error);
+    res.status(500).json({ error: "Error interno del servidor", detalle: error.message });
   }
 };
 
