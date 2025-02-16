@@ -24,19 +24,20 @@ export const registrarProducto = async (datos, file) => {
 };
 
 // obtenemos la lista de productos
-export const listar = async (pagina = 1 , limite = 5 ) => {
-  const offset = (pagina - 1 ) * limite;
-  const {productos, total} = await obtenemosListaProducto(limite, offset);
+export const listar = async (pagina = 1, limite = 10, categoria = null) => {
+  const offset = (pagina - 1) * limite;
 
-  const productoSinImagen = productos.map(({imagen, ...productos}) => productos )
+  // 📌 Pasamos la categoría si existe
+  const { productos, total } = await obtenemosListaProducto(limite, offset, categoria);
 
   return {
-    productos: productoSinImagen,
+    productos,
     paginaActual: pagina,
-    totalPAgina: Math.ceil(total / limite),
-    totalProdutos: total,
-  }
-}
+    totalPaginas: Math.ceil(total / limite),
+    totalProductos: total,
+  };
+};
+
 
 // modificar productos
 export const modificarProducto = async (id, datos) => {

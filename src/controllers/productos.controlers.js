@@ -15,21 +15,28 @@ export const crearNuevoProducto = async (req, res) => {
   }
 };
 
-export const ListadoProducto = async (req,res,next) => {
+export const ListadoProducto = async (req, res, next) => {
   try {
-    const pagina = parseInt(req.query.page) || 1;
-    const limte = parseInt(req.query.limit) || 5;
+    const pagina = parseInt(req.query.page, 10) || 1;
+    const limite = parseInt(req.query.limit, 10) || 10;
+    const categoria = req.query.categoria || null; 
 
-    const productos = await listar(pagina, limte)
+    console.log("📌 Categoría recibida:", categoria);
+    console.log("📌 Página:", pagina, "Límite:", limite);
+
+    const productos = await listar(pagina, limite, categoria);
 
     return res.status(200).json({
-      message: 'Listado de productos',
-      productos
-    })
+      message: "Listado de productos",
+      productos,
+    });
   } catch (error) {
-    return next(error)
+    console.error("❌ Error en ListadoProducto:", error.message);
+    return next(error);
   }
-}
+};
+
+
 
 export const actualizarProducto = async (req,res,next) => {
   try {

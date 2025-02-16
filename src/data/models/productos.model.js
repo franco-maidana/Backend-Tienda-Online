@@ -12,19 +12,38 @@ export const crearProducto = async ({ nombre, descripcion, marca, categoria, pre
 };
 
 // Buscamos la lista de los usuarios
-export const obtenemosListaProducto = async (limite = 10, offset = 0) => {
-  limite = parseInt(limite) || 10;  // Si no es un número, asignar 10 por defecto
-  offset = parseInt(offset) || 0;   // Si no es un número, asignar 0 por defecto
+export const obtenemosListaProducto = async (limite, offset, categoria) => {
+  try {
+    let query = "SELECT * FROM productos";
+    let queryParams = [];
 
-  const [productos] = await Conexion.query(
-    `SELECT * FROM productos LIMIT ? OFFSET ?`,
-    [limite, offset]
-  );
+    if (categoria) {
+      query += " WHERE categoria = ?";
+      queryParams.push(categoria);
+    }
 
-  const [[{ total }]] = await Conexion.query(`SELECT COUNT(*) AS total FROM productos`);
+    // 📌 IMPORTANTE: Concatenamos `LIMIT` y `OFFSET` directamente en la consulta
+    query += ` LIMIT ${parseInt(limite, 10)} OFFSET ${parseInt(offset, 10)}`;
 
-  return { productos, total };
+    console.log("📌 Consulta SQL corregida:", query);
+    console.log("📌 Parámetros:", queryParams);
+
+    // 📌 Ejecutamos la consulta
+    const [productos] = await Conexion.execute(query, queryParams);
+
+    const totalQuery = "SELECT COUNT(*) AS total FROM productos";
+    const [totalResult] = await Conexion.execute(totalQuery);
+    const total = totalResult[0].total;
+
+    return { productos, total };
+  } catch (error) {
+    console.error("❌ Error en obtenemosListaProducto:", error.message);
+    throw new Error("Error al obtener productos");
+  }
 };
+
+
+
 
 // modificar productos
 export const actualizarProducto = async (id, datos) => {

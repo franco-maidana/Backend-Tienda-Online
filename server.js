@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import Conexion from "./src/config/db.js";
 import cors from "cors";
+import path from "path";
 import indexRouter from "./src/router/index.router.js";
 
 dotenv.config();
@@ -38,6 +39,10 @@ server.use(express.urlencoded({ extended: true }));
 
 // 📌 Cargar las rutas
 server.use("/", indexRouter);
+
+
+// 📌 Servir imágenes de la carpeta "upload"
+server.use("/uploads", express.static(path.join(process.cwd(), "upload")));
 
 // 📌 Iniciar el servidor
 server.listen(PORT, ready);
