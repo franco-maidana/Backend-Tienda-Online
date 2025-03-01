@@ -28,8 +28,8 @@ export const obtenemosListaProducto = async (limite, offset, categoria) => {
 
     query += ` LIMIT ${limiteInt} OFFSET ${offsetInt}`; // ⚠️ Concatenamos los valores directamente
 
-    console.log("📌 SQL Ejecutado:", query);
-    console.log("📌 Parámetros:", queryParams);
+    // console.log("📌 SQL Ejecutado:", query);
+    // console.log("📌 Parámetros:", queryParams);
 
     // 📌 Ejecutamos la consulta sin pasar `LIMIT` y `OFFSET` como parámetros
     const [productos] = await Conexion.execute(query, queryParams);

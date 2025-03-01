@@ -21,7 +21,7 @@ export const ListadoProducto = async (req, res) => {
     const limite = parseInt(req.query.limite) || 10;
     const categoria = req.query.categoria || null;
 
-    console.log(`📌 Solicitando productos - Página: ${pagina}, Límite: ${limite}, Categoría: ${categoria}`);
+    // console.log(`📌 Solicitando productos - Página: ${pagina}, Límite: ${limite}, Categoría: ${categoria}`);
 
     const productosData = await listar(pagina, limite, categoria);
     

@@ -1,4 +1,4 @@
-import {crearOrden, obtenerProductosDelCarrito} from '../data/models/ordenes.model.js'
+import {crearOrden, obtenerProductosDelCarrito, obtenerOrdenes} from '../data/models/ordenes.model.js'
 import {agregarDetallesOrden, obtenerDetallesOrden} from '../data/models/detalleOrden.model.js'
 import {disminuirStock} from '../data/models/productos.model.js'
 import {vaciarCarrito} from '../data/models/carrito.model.js'
@@ -7,12 +7,18 @@ export const generarOrden = async (usuario_id) => {
   // 🔍 Obtener los productos del carrito
   const productos = await obtenerProductosDelCarrito(usuario_id);
 
-  if (productos.length === 0) {
-      throw new Error("❌ No hay productos en el carrito.");
+    // 🔥 Validar que haya productos en el carrito
+  if (!productos || productos.length === 0) {
+    throw new Error("❌ No hay productos en el carrito.");
   }
+  
+  // 🔥 Calcular total de la compra (asegurar que precio y cantidad son números válidos)
+  const total = productos.reduce((acc, prod) => {
+    const cantidad = Number(prod.cantidad) || 0;
+    const precio = Number(prod.precio) || 0;
+    return acc + (cantidad * precio);
+  }, 0);
 
-  // 🔥 Calcular total de la compra
-  const total = productos.reduce((acc, prod) => acc + (prod.cantidad * prod.precio), 0);
 
   // 🔥 Crear la orden en la BD
   const orden_id = await crearOrden(usuario_id, total);
@@ -37,4 +43,10 @@ export const verDetallesOrden = async (orden_id) => {
   }
 
   return detalles;
+};
+
+export const obtenerOrdenesPorUsuario = async (usuario_id = null) => {
+  // 📌 Si `usuario_id` es `null`, obtiene todas las órdenes (para admins)
+  const ordenes = await obtenerOrdenes(usuario_id);
+  return ordenes;
 };

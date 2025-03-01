@@ -10,7 +10,7 @@ import {
 const carritoDeCompras = new CustomRouter();
 
 //  Agregar producto al carrito (cliente autenticado)
-carritoDeCompras.create('/create', ['cliente'], agregarAlCarritoController);
+carritoDeCompras.create('/create', ['cliente',], agregarAlCarritoController);
 //  Ver carrito del usuario (solo el usuario puede ver su carrito)
 carritoDeCompras.listar('/listar/:usuario_id', ['cliente'], verCarritoController);
 //  Modificar cantidad de productos en el carrito

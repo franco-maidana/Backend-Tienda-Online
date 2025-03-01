@@ -13,7 +13,7 @@ export const crearUsuario = async (nombre, apellido, telefono, direccion, email,
 
 // Buscamos un usuario por el email
 export const obtenerUsuarios = async (email) => {
-  console.log("📌 Buscando usuario con email:", email); // 🔥 Depuración
+  // console.log("📌 Buscando usuario con email:", email); // 🔥 Depuración
 
   if (!email || typeof email !== 'string') {
       throw new Error("❌ Error: Email inválido en la consulta SQL");
@@ -96,19 +96,17 @@ export const guardarTokenReset = async (id, token) => {
 
 // Obtener usuario por token
 export const obtenerUsuarioPorToken = async (token) => {
-  console.log("📌 Buscando usuario con token:", token); // 🔥 Depuración
+  // console.log("📌 Buscando usuario con token:", token); // 🔥 Depuración
 
   const [usuarios] = await Conexion.query(
       `SELECT * FROM usuario WHERE reset_token = ? AND reset_expira > NOW()`,
       [token]
   );
 
-  console.log("📌 Resultado de la consulta:", usuarios); // 🔥 Depuración
+  // console.log("📌 Resultado de la consulta:", usuarios); // 🔥 Depuración
 
   return usuarios.length ? usuarios[0] : null;
 };
-
-
 
 // Eliminar el token después de usarlo
 export const eliminarTokenReset = async (id) => {
@@ -120,14 +118,14 @@ export const eliminarTokenReset = async (id) => {
 
 // actualizamos password
 export const actualizarPassword = async (id, passwordEncriptado) => {
-  console.log("📌 Intentando actualizar contraseña para el usuario ID:", id); // 🔥 Depuración
+  // console.log("📌 Intentando actualizar contraseña para el usuario ID:", id); // 🔥 Depuración
 
   const [result] = await Conexion.query(
       `UPDATE usuario SET password = ?, reset_token = NULL, reset_expira = NULL, updated_at = NOW() WHERE id = ?`,
       [passwordEncriptado, id]
   );
 
-  console.log("📌 Resultado de la actualización:", result); // 🔥 Depuración
+  // console.log("📌 Resultado de la actualización:", result); // 🔥 Depuración
 
   return result.affectedRows > 0;
 };

@@ -2,20 +2,25 @@ import Conexion from "../../config/db.js";
 
 // 🔥 Agregar un producto al carrito o actualizar cantidad si ya existe
 export const agregarAlCarrito = async (usuario_id, producto_id, cantidad) => {
+    // Consultar el producto incluyendo el descuento
     const [producto] = await Conexion.query(
-        `SELECT stock, precio FROM productos WHERE id = ?`,
+        `SELECT stock, precio, descuento FROM productos WHERE id = ?`,
         [producto_id]
     );
-
     if (!producto.length) {
         throw new Error(`❌ El producto con ID ${producto_id} no existe.`);
     }
-
     if (producto[0].stock < cantidad) {
         throw new Error(`❌ No hay suficiente stock disponible.`);
     }
 
-    // 🔍 Verificar si el producto ya está en el carrito
+    const precioOriginal = parseFloat(producto[0].precio);
+    const descuento = parseFloat(producto[0].descuento) || 0;
+    const precioFinal = descuento > 0 
+      ? precioOriginal - (precioOriginal * (descuento / 100)) 
+      : precioOriginal;
+
+    // Verificar si el producto ya está en el carrito
     const [existe] = await Conexion.query(
         `SELECT * FROM carrito WHERE usuario_id = ? AND producto_id = ?`,
         [usuario_id, producto_id]
@@ -28,26 +33,30 @@ export const agregarAlCarrito = async (usuario_id, producto_id, cantidad) => {
             [cantidad, usuario_id, producto_id]
         );
     } else {
-        // Si no existe, lo agregamos
+        // Si no existe, lo agregamos con el precio ya descontado
         await Conexion.query(
             `INSERT INTO carrito (usuario_id, producto_id, cantidad, precio) VALUES (?, ?, ?, ?)`,
-            [usuario_id, producto_id, cantidad, producto[0].precio]
+            [usuario_id, producto_id, cantidad, precioFinal]
         );
     }
 };
+;
 
-// 🔍 Obtener productos del carrito de un usuario con el total
+// 🔍 Obtener productos del carrito de un usuario con el total y la imagen
 export const obtenerCarrito = async (usuario_id) => {
     const [productos] = await Conexion.query(
-        `SELECT c.id, c.cantidad, p.nombre, p.precio, (c.cantidad * c.precio) AS total 
-          FROM carrito c 
-          JOIN productos p ON c.producto_id = p.id
-          WHERE c.usuario_id = ?`,
+        `SELECT c.id, c.producto_id, c.cantidad, p.nombre, p.precio, p.imagen, 
+        (c.cantidad * c.precio) AS total 
+        FROM carrito c 
+        JOIN productos p ON c.producto_id = p.id
+        WHERE c.usuario_id = ?`,
         [usuario_id]
     );
-
     return productos;
 };
+
+
+
 
 // ✏️ Actualizar la cantidad de un producto en el carrito
 export const actualizarCantidadCarrito = async (usuario_id, producto_id, cantidad) => {

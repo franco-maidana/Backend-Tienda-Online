@@ -1,5 +1,5 @@
 import CustomRouter from "../customRouter.js";
-import { login, logout } from "../../controllers/auth.controllers.js";
+import { login, logout, sessionActiva } from "../../controllers/auth.controllers.js";
 
 const sessionsRouter = new CustomRouter();
 
@@ -8,5 +8,7 @@ sessionsRouter.create("/login", ['public'], login);
 
 //  Ruta para cerrar sesión (requiere estar autenticado)
 sessionsRouter.create("/logout", ['admin', 'cliente'], logout);
+
+sessionsRouter.listar('/usuario', ['admin', 'cliente'], sessionActiva);
 
 export default sessionsRouter.getRouter();

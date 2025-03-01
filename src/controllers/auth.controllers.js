@@ -1,5 +1,5 @@
 import { solicitarCambioPassword, cambiarPassword,} from "../services/auth.service.js";
-import { obtenerUsuarioPorToken, obtenerUsuarios } from "../data/models/usuario.model.js";
+import { obtenerUsuarioPorToken, obtenerUsuarios, obtenerUsuariosPorID } from "../data/models/usuario.model.js";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv'
@@ -55,38 +55,59 @@ export const resetPassword = async (req, res) => {
 //  Inicio de sesión con JWT en Cookies
 export const login = async (req, res) => {
   try {
-      const { email, password } = req.body;
-      const usuario = await obtenerUsuarios(email);
+    const { email, password } = req.body;
+    const usuario = await obtenerUsuarios( email );
 
-      if (!usuario) {
-          return res.status(400).json({ message: "Credenciales incorrectas" });
-      }
+    if (!usuario) return res.status(401).json({ message: "Usuario no encontrado" });
 
-      const passwordValida = bcrypt.compareSync(password, usuario.password);
-      if (!passwordValida) {
-          return res.status(400).json({ message: "Credenciales incorrectas" });
-      }
+    const passwordValido = await bcrypt.compare(password, usuario.password);
+    if (!passwordValido) return res.status(401).json({ message: "Contraseña incorrecta" });
 
-      // Crear token
-      const token = jwt.sign({ email: usuario.email, role: usuario.role }, process.env.JWT_SECRET, {
-          expiresIn: "2h",
-      });
+    // ✅ Generar JWT
+    const token = jwt.sign(
+      { id: usuario.id, email: usuario.email },
+      process.env.JWT_SECRET, // ✅ Usa la clave correcta del .env
+      { expiresIn: "1h" }
+    );
+    
 
-      // Enviar token en cookies
-      res.cookie("token", token, {
-          httpOnly: true,
-          secure: false, //  Cambia a `true` en producción con HTTPS
-          sameSite: "Strict"
-      });
+    // ✅ Guardar el token en una cookie segura
+    res.cookie("token", token, {
+      httpOnly: true, // ✅ No accesible desde JavaScript del frontend
+      secure: false, // ✅ Cambia a `true` si usas HTTPS
+      sameSite: "lax", // ✅ Permite compartir cookies entre frontend y backend
+    });
 
-      res.json({ message: "Inicio de sesión exitoso" });
+    // ✅ Guardar usuario en la sesión
+    req.session.usuario = usuario;
+
+    res.json({ message: "Login exitoso", usuario });
   } catch (error) {
-      res.status(500).json({ message: "Error en el servidor" });
+    console.error("❌ Error en login:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
   }
 };
 
 
+export const sessionActiva = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "No autenticado" });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const usuario = await obtenerUsuariosPorID(decoded.id);
+    if (!usuario) return res.status(404).json({ message: "Usuario no encontrado" });
+    res.json({ usuario });
+  } catch (error) {
+    console.error("Error en sessionActiva:", error.message);
+    res.status(401).json({ message: "Token inválido o expirado" });
+  }
+};
+
+
+
+
 export const logout = (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token"); // ✅ Elimina el token almacenado en cookies
+  req.session.destroy(); // ✅ Elimina la sesión
   res.json({ message: "Sesión cerrada correctamente" });
 };
